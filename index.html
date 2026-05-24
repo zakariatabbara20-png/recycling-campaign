@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack Campaign</title>
+    <style>
+        :root {
+            --primary: #1e88e5;
+            --primary-dark: #1565c0;
+            --primary-light: #e3f2fd;
+            --text: #2c3e50;
+            --bg: #f5f7fa;
+            --white: #ffffff;
+            --border: #dbe2e8;
+            --error: #e53935;
+            --success: #43a047;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(30, 136, 229, 0.08);
+            padding: 30px 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            font-size: 26px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        /* Portal Selection Buttons */
+        .portal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .portal-btn {
+            background: var(--white);
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .portal-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            background: var(--bg);
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            background: var(--white);
+        }
+
+        button.action-btn {
+            width: 100%;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        button.action-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Visual Bag Tracker Progress Bar */
+        .bag-tracker-box {
+            background: var(--primary-light);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #bbdefb;
+        }
+
+        .tracker-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-bg {
+            background: rgba(30, 136, 229, 0.2);
+            height: 14px;
+            border-radius: 7px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: var(--primary);
+            height: 100%;
+            width: 35%; /* Changes dynamically */
+            transition: width 0.5s ease-out;
+        }
+
+        /* Notification & Chat Layout blocks */
+        .dashboard-box {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+
+        .notification-item {
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .notification-item:last-child { border: none; }
+
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .tab-menu {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .tab-link {
+            color: #7f8c8d;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .tab-link.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <div id="portal-screen" class="screen active">
+        <h1>EcoTrack</h1>
+        <p class="subtitle">Recycling Workspace 2026</p>
+        <div class="portal-options">
+            <button class="portal-btn" onclick="navigateTo('volunteer-login-screen')">Volunteer Sign-In</button>
+            <button class="portal-btn" onclick="navigateTo('host-login-screen')" style="background: var(--primary); color: white;">Host Command Central</button>
+        </div>
+    </div>
+
+    <div id="host-login-screen" class="screen">
+        <h1>Host Login</h1>
+        <p class="subtitle">Campaign Administrator Access</p>
+        <div class="form-group">
+            <label>Manager Username</label>
+            <input type="text" id="host-username" placeholder="Enter Admin Name">
+        </div>
+        <div class="form-group">
+            <label>Master Security Password</label>
+            <input type="password" id="host-password" placeholder="••••••••">
+        </div>
+        <button class="action-btn" onclick="checkHostLogin()">Access Mainframe</button>
+        <a class="back-link" onclick="navigateTo('portal-screen')">← Back to Selection</a>
+    </div>
+
+    <div id="volunteer-login-screen" class="screen">
+        <h1>Volunteer Login</h1>
+        <p class="subtitle">Access your personal portal assignment</p>
+        <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" id="vol-login-name" placeholder="Exactly as host registered you">
+        </div>
+        <div class="form-group">
+            <label>Assigned Campaign Password</label>
+            <input type="password" id="vol-login-pass" placeholder="••••••••">
+        </div>
+        <button class="action-btn" onclick="checkVolunteerLogin()">Sign In</button>
+        <a class="back-link" onclick="navigateTo('portal-screen')">← Back to Selection</a>
+    </div>
+
+    <div id="host-dashboard" class="screen">
+        <h1>Welcome, Zacharia</h1>
+        <p class="subtitle" style="margin-bottom:15px;">Project Coordinator Dashboard</p>
+
+        <div class="bag-tracker-box">
+            <div class="tracker-header">
+                <span>Plastic Bags Logged</span>
+                <span id="host-bag-counter">70 / 200 Bags</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div id="host-progress-fill" class="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <div class="tab-menu">
+            <span class="tab-link active" id="tab-roster-btn" onclick="switchHostTab('roster')">Roster Setup</span>
+            <span class="tab-link" id="tab-feeds-btn" onclick="switchHostTab('feeds')">Live System Feeds</span>
+        </div>
+
+        <div id="host-tab-roster">
+            <h3 style="font-size:14px; margin-bottom:10px;">Add New Volunteer Account</h3>
+            <div class="form-group" style="margin-bottom:10px;">
+                <input type="text" id="new-vol-name" placeholder="Full Name">
+            </div>
+            <div class="form-group" style="margin-bottom:15px;">
+                <input type="text" id="new-vol-pass" placeholder="Assign Custom Password">
+            </div>
+            <button class="action-btn" onclick="registerVolunteer()" style="margin-top:0; padding:12px;">Provision Credentials</button>
+        </div>
+
+        <div id="host-tab-feeds" style="display:none;">
+            <h3 style="font-size:14px; margin-bottom:5px;">Excuse Notifications</h3>
+            <div class="dashboard-box" id="notification-box">
+                <div class="notification-item" style="color:var(--error); font-weight:600;">System Alert: No data submissions recorded yet today.</div>
+            </div>
+
+            <h3 style="font-size:14px; margin-bottom:5px;">Team Communications Board</h3>
+            <div class="dashboard-box" id="host-chat-box" style="max-height:100px;">
+                <div class="notification-item"><b>System:</b> Channel encryption loaded successfully.</div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" id="host-chat-msg" placeholder="Type group announcement...">
+                <button onclick="sendHostChat()" style="padding:0 15px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold;">Post</button>
+            </div>
+        </div>
+
+        <a class="back-link" onclick="logout()" style="color:var(--error)">Disconnect Session</a>
+    </div>
+
+    <div id="volunteer-dashboard" class="screen">
+        <h1 id="vol-greeting">Hi, Volunteer!</h1>
+        <p class="subtitle">Active Campaign Workspace</p>
+
+        <div class="bag-tracker-box" style="background:#fff; border-color:var(--border);">
+            <div class="tracker-header">
+                <span style="font-size:14px; color:#7f8c8d;">Group Campaign Metrics</span>
+                <span id="vol-bag-counter" style="font-size:14px;">70 Bags Total</span>
+            </div>
+        </div>
+
+        <form action="https://formspree.io/f/YOUR_UNIQUE_ID_HERE" method="POST" onsubmit="handleVolFormSubmit(event)">
+            <input type="hidden" name="Volunteer Identity" id="formspree-hidden-name">
+            
+            <div class="form-group">
+                <label>Action Choice</label>
+                <select name="Report Type" id="vol-action-select" onchange="toggleVolFormType()">
+                    <option value="log-bags">Log bags collected today</option>
+                    <option value="submit-excuse">File structural shift absence/excuse</option>
+                </select>
+            </div>
+
+            <div id="vol-bags-group">
+                <div class="form-group">
+                    <label>How many plastic bags collected?</label>
+                    <input type="number" name="Bags Counted" id="vol-bag-count" placeholder="0" inputmode="numeric">
+                </div>
+            </div>
+
+            <div id="vol-excuse-group" style="display:none;">
+                <div class="form-group">
+                    <label>Reason for Absence/Excuse Notice</label>
+                    <textarea name="Attendance Excuse Note" id="vol-excuse-text" rows="3" placeholder="Provide shift excuse details..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="action-btn">Transmit Form Data</button>
+        </form>
+
+        <a class="back-link" onclick="logout()" style="color:var(--error)">Log Out</a>
+    </div>
+
+</div>
+
+<script>
+    // Local In-Memory App Variables (Wipes on refresh cleanly)
+    let volunteersDatabase = {};
+    let totalBagsCollected = 70;
+    const campaignGoal = 200;
+
+    // View Routing Management Engines
+    function navigateTo(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        updateVisualProgressBars();
+    }
+
+    function switchHostTab(tabName) {
+        document.getElementById('host-tab-roster').style.display = tabName === 'roster' ? 'block' : 'none';
+        document.getElementById('host-tab-feeds').style.display = tabName === 'feeds' ? 'block' : 'none';
+        document.getElementById('tab-roster-btn').classList.toggle('active', tabName === 'roster');
+        document.getElementById('tab-feeds-btn').classList.toggle('active', tabName === 'feeds');
+    }
+
+    function toggleVolFormType() {
+        const type = document.getElementById('vol-action-select').value;
+        document.getElementById('vol-bags-group').style.display = type === 'log-bags' ? 'block' : 'none';
+        document.getElementById('vol-excuse-group').style.display = type === 'submit-excuse' ? 'block' : 'none';
+    }
+
+    function updateVisualProgressBars() {
+        const percentage = Math.min((totalBagsCollected / campaignGoal) * 100, 100);
+        const fillElement = document.getElementById('host-progress-fill');
+        if(fillElement) fillElement.style.width = percentage + '%';
+        
+        const hostCounter = document.getElementById('host-bag-counter');
+        if(hostCounter) hostCounter.innerText = `${totalBagsCollected} / ${campaignGoal} Bags`;
+        
+        const volCounter = document.getElementById('vol-bag-counter');
+        if(volCounter) volCounter.innerText = `${totalBagsCollected} Bags Total`;
+    }
+
+    // Host System Logic Accounts
+    function checkHostLogin() {
+        const user = document.getElementById('host-username').value;
+        const pass = document.getElementById('host-password').value;
+        
+        if(user.toLowerCase() === 'zacharia' && pass === 'cossrc') {
+            navigateTo('host-dashboard');
+            // Clean out text inputs smoothly
+            document.getElementById('host-username').value = '';
+            document.getElementById('host-password').value = '';
+        } else {
+            alert('❌ Invalid Administrative Identity Credentials.');
+        }
+    }
+
+    function registerVolunteer() {
+        const name = document.getElementById('new-vol-name').value.trim();
+        const pass = document.getElementById('new-vol-pass').value.trim();
+        
+        if(!name || !pass) {
+            alert('⚠️ Fill out both configuration boxes completely.');
+            return;
+        }
+        
+        volunteersDatabase[name.toLowerCase()] = { name: name, password: pass };
+        alert(`✅ Account Provisioned Successfully!\nUser: ${name}\nPassword: ${pass}`);
+        
+        document.getElementById('new-vol-name').value = '';
+        document.getElementById('new-vol-pass').value = '';
+    }
+
+    // Volunteer Authentication Logic
+    let currentActiveVolunteer = "";
+    function checkVolunteerLogin() {
+        const nameInput = document.getElementById('vol-login-name').value.trim();
+        const passInput = document.getElementById('vol-login-pass').value.trim();
+        
+        const targetUser = volunteersDatabase[nameInput.toLowerCase()];
+        
+        if (targetUser && targetUser.password === passInput) {
+            currentActiveVolunteer = targetUser.name;
+            document.getElementById('vol-greeting').innerText = `Hi, ${targetUser.name}!`;
+            document.getElementById('formspree-hidden-name').value = targetUser.name;
+            navigateTo('volunteer-dashboard');
+            
+            document.getElementById('vol-login-name').value = '';
+            document.getElementById('vol-login-pass').value = '';
+        } else {
+            alert('❌ Profile account record not found or security credentials mismatch.');
+        }
+    }
+
+    // Dynamic Live Actions Data Simulator
+    function sendHostChat() {
+        const msg = document.getElementById('host-chat-msg').value.trim();
+        if(!msg) return;
+        const chatBox = document.getElementById('host-chat-box');
+        chatBox.innerHTML += `<div class="notification-item"><b>Zacharia:</b> ${msg}</div>`;
+        document.getElementById('host-chat-msg').value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function handleVolFormSubmit(event) {
+        // Intercept data changes locally to update dashboards on screen
+        const type = document.getElementById('vol-action-select').value;
+        
+        if (type === 'log-bags') {
+            const addedBags = parseInt(document.getElementById('vol-bag-count').value) || 0;
+            totalBagsCollected += addedBags;
+        } else if (type === 'submit-excuse') {
+            const excuseText = document.getElementById('vol-excuse-text').value;
+            const notifBox = document.getElementById('notification-box');
+            if(notifBox) {
+                notifBox.innerHTML += `<div class="notification-item" style="border-left: 3px solid var(--error); padding-left:5px;"><b>🚨 ${currentActiveVolunteer}:</b> ${excuseText}</div>`;
+            }
+        }
+        
+        // This lets the form submit its tracking payload to Formspree cleanly 
+        alert("Sending data entry transmission record...");
+    }
+
+    function logout() {
+        currentActiveVolunteer = "";
+        navigateTo('portal-screen');
+    }
+
+    // Initialize display metrics right away on load
+    updateVisualProgressBars();
+</script>
+
+</body>
+</html>
